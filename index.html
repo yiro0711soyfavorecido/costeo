@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="es-CO">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Costeo Contraentrega</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0C2A23">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icono-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Costeo">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>:root{padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}[hidden]{display:none!important}.top{padding-top:calc(14px + env(safe-area-inset-top,0px))!important}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: barra superior · banda oscura con el veredicto (utilidad + medidor de CPA) · columna de datos y columna de lectura (embudo y desglose) · ofertas en tarjetas. */
+:root{
+  --bg:#EEF2EF; --surface:#FFFFFF; --surface-2:#F6F8F6; --ink:#122019; --muted:#5E6B64; --line:#DDE4DF;
+  --band:#0C2A23; --band-2:#123A30; --band-ink:#EAF6F1; --band-muted:#9FC2B6;
+  --accent:#12A07F; --accent-strong:#0B7E63; --accent-soft:#D9F2EA; --mint:#43E0B2;
+  --good:#1C9256; --warn:#C17E14; --bad:#CC3B30; --good-soft:#E1F4E8; --warn-soft:#FCEFD6; --bad-soft:#FAE2DF;
+  --c-prod:#7C8B84; --c-flete:#E0A43B; --c-pauta:#12A07F; --c-otros:#9AA7C7;
+  --shadow:0 1px 2px rgba(12,42,35,.06),0 8px 24px -12px rgba(12,42,35,.18);
+  --display:"Sora","Segoe UI",system-ui,sans-serif; --body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0A120F; --surface:#121C18; --surface-2:#17231E; --ink:#E6F0EB; --muted:#93A39B; --line:#24332C;
+  --band:#06211A; --band-2:#0D2F26; --band-ink:#EAF6F1; --band-muted:#8FB9AB;
+  --accent:#2BC39B; --accent-strong:#43E0B2; --accent-soft:#123A30; --mint:#43E0B2;
+  --good:#4CC983; --warn:#EDB24C; --bad:#F07A70; --good-soft:#12301F; --warn-soft:#3A2A10; --bad-soft:#3E1B18;
+  --c-prod:#8A9A92; --c-flete:#EDB24C; --c-pauta:#2BC39B; --c-otros:#8E9BC0;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px -14px rgba(0,0,0,.6); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0A120F; --surface:#121C18; --surface-2:#17231E; --ink:#E6F0EB; --muted:#93A39B; --line:#24332C;
+  --band:#06211A; --band-2:#0D2F26; --band-ink:#EAF6F1; --band-muted:#8FB9AB;
+  --accent:#2BC39B; --accent-strong:#43E0B2; --accent-soft:#123A30; --mint:#43E0B2;
+  --good:#4CC983; --warn:#EDB24C; --bad:#F07A70; --good-soft:#12301F; --warn-soft:#3A2A10; --bad-soft:#3E1B18;
+  --c-prod:#8A9A92; --c-flete:#EDB24C; --c-pauta:#2BC39B; --c-otros:#8E9BC0;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px -14px rgba(0,0,0,.6); color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;margin:0}
+.gut{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.in{max-width:1180px;margin:0 auto}
+.num{font-variant-numeric:tabular-nums}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance}
+
+/* Barra superior */
+.top{background:var(--band);color:var(--band-ink);padding-block:14px}
+.top .in{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px}
+.mark{width:40px;height:40px;border-radius:11px;background:var(--accent);display:grid;place-items:center;flex:none}
+.brand h1{font-size:18px;font-weight:700;letter-spacing:-.01em}
+.brand p{margin:0;font-size:12.5px;color:var(--band-muted)}
+.topact{display:flex;gap:8px;flex-wrap:wrap}
+button{font:inherit;font-weight:600;border-radius:10px;padding:9px 14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;transition:transform .12s ease,background .12s ease}
+button:hover{transform:translateY(-1px)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn-main{background:var(--mint);border-color:var(--mint);color:#06211A}
+.btn-ghost{background:transparent;border-color:rgba(255,255,255,.22);color:var(--band-ink)}
+
+/* Banda del veredicto */
+.hero{background:linear-gradient(180deg,var(--band) 0%,var(--band-2) 100%);color:var(--band-ink);padding-block:22px 64px}
+.hero .in{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:28px;align-items:end}
+@media (max-width:880px){.hero .in{grid-template-columns:minmax(0,1fr)}}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--band-muted)}
+.big{font-family:var(--display);font-weight:800;font-size:clamp(44px,8vw,76px);line-height:1;letter-spacing:-.03em;margin:8px 0 10px;font-variant-numeric:tabular-nums}
+.big.good{color:var(--mint)} .big.warn{color:#F4C46A} .big.bad{color:#FF8B80}
+.verdict{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:4px 11px;border-radius:999px}
+.pill.on-dark{background:rgba(255,255,255,.1);color:var(--band-ink)}
+.pill.good{background:var(--good-soft);color:var(--good)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.bad{background:var(--bad-soft);color:var(--bad)}
+.hero .pill.good{background:rgba(67,224,178,.16);color:var(--mint)} .hero .pill.warn{background:rgba(244,196,106,.16);color:#F4C46A} .hero .pill.bad{background:rgba(255,139,128,.16);color:#FF8B80}
+.msg{margin:14px 0 0;color:var(--band-muted);max-width:56ch;font-size:14.5px}
+.msg b{color:var(--band-ink)}
+
+.gauge{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:16px 18px;display:grid;gap:12px}
+.gauge h3{font-size:14px;font-weight:600;color:var(--band-ink)}
+.track{position:relative;height:14px;border-radius:7px;background:linear-gradient(90deg,var(--mint) 0%,var(--mint) var(--z1,50%),#F4C46A var(--z1,50%),#F4C46A var(--z2,75%),#FF8B80 var(--z2,75%),#FF8B80 100%);opacity:.9}
+.needle{position:absolute;top:-7px;width:4px;height:28px;border-radius:2px;background:var(--band-ink);box-shadow:0 0 0 3px var(--band);transform:translateX(-2px);transition:left .35s ease}
+.gscale{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--band-muted);flex-wrap:wrap}
+.gscale b{color:var(--band-ink);font-variant-numeric:tabular-nums}
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.kpi{background:rgba(255,255,255,.06);border-radius:12px;padding:10px 12px;min-width:0}
+.kpi span{display:block;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--band-muted);font-weight:600}
+.kpi b{font-family:var(--display);font-size:clamp(17px,2.2vw,21px);font-weight:700;font-variant-numeric:tabular-nums}
+@media (max-width:420px){.kpis{grid-template-columns:minmax(0,1fr)}}
+
+/* Contenido */
+main{margin-top:-44px;padding-bottom:48px}
+main .in{display:grid;gap:18px}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:880px){.cols{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:var(--shadow);display:grid;gap:18px;min-width:0}
+.card h2{font-size:17px;font-weight:700;display:flex;align-items:center;gap:10px}
+.ic{width:30px;height:30px;border-radius:9px;background:var(--accent-soft);display:grid;place-items:center;flex:none;color:var(--accent-strong)}
+.sec{display:grid;gap:12px}
+.sec-t{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:440px){.row2{grid-template-columns:1fr}}
+label{display:grid;gap:5px;font-weight:600;font-size:14px}
+label small{font-weight:400;color:var(--muted);font-size:12.5px;line-height:1.35}
+.field{display:flex;align-items:center;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);transition:border-color .12s}
+.field:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.field span{padding:0 11px;color:var(--muted);font-weight:500}
+.field input{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font:inherit;font-weight:600;padding:10px 11px;font-variant-numeric:tabular-nums}
+.field input:focus{outline:none}
+.slide{display:grid;gap:6px}
+.slide .head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.slide .head output{font-family:var(--display);font-weight:700;font-size:16px;color:var(--accent-strong);font-variant-numeric:tabular-nums}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--accent) var(--p,0%),var(--line) var(--p,0%));cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--surface);border:3px solid var(--accent);box-shadow:var(--shadow)}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--surface);border:3px solid var(--accent)}
+.divider{height:1px;background:var(--line)}
+
+/* Embudo y desglose */
+.funnel{display:grid;gap:8px}
+.fstep{display:grid;grid-template-columns:118px minmax(0,1fr) 64px;gap:10px;align-items:center;font-size:14px}
+@media (max-width:440px){.fstep{grid-template-columns:96px minmax(0,1fr) 54px}}
+.fbar{height:30px;border-radius:8px;background:var(--surface-2);overflow:hidden}
+.fbar i{display:block;height:100%;border-radius:8px;transition:width .35s ease}
+.fstep b{text-align:right;font-family:var(--display);font-variant-numeric:tabular-nums}
+.stack{display:flex;height:22px;border-radius:11px;overflow:hidden;background:var(--line)}
+.stack i{display:block;height:100%;transition:width .35s ease}
+.legend{display:grid;gap:8px;font-size:14px}
+.legend div{display:grid;grid-template-columns:minmax(0,1fr) auto 52px;gap:10px;align-items:center}
+.legend span:first-child{display:flex;align-items:center;gap:9px;min-width:0}
+.legend em{font-style:normal;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.sw{width:12px;height:12px;border-radius:4px;flex:none}
+.legend .total{border-top:1px solid var(--line);padding-top:8px;font-weight:700}
+
+/* Ofertas */
+.offers{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+@media (max-width:980px){.offers{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:480px){.offers{grid-template-columns:minmax(0,1fr)}}
+.offer{position:relative;border:1px solid var(--line);border-radius:16px;padding:16px;display:grid;gap:10px;background:var(--surface);min-width:0}
+.offer.best{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.offer .flag{position:absolute;top:-11px;left:14px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:var(--accent);color:#fff;padding:3px 9px;border-radius:999px}
+.offer .units{display:flex;align-items:baseline;gap:6px}
+.offer .units input{width:46px;font-family:var(--display);font-size:26px;font-weight:800;border:0;border-bottom:2px dashed var(--line);background:transparent;color:var(--ink);padding:0;text-align:center}
+.offer .units span{color:var(--muted);font-weight:600}
+.offer .res{font-family:var(--display);font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
+.offer .res.good{color:var(--good)} .offer .res.warn{color:var(--warn)} .offer .res.bad{color:var(--bad)}
+.offer dl{margin:0;display:grid;grid-template-columns:auto auto;gap:4px 10px;font-size:13.5px}
+.offer dt{color:var(--muted)} .offer dd{margin:0;text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+
+/* Guardados y fórmulas */
+.saved{display:grid;gap:8px}
+.saved .item{display:flex;justify-content:space-between;gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:8px 12px;background:var(--surface-2)}
+.saved .item button{padding:5px 11px;font-size:13px}
+.empty{color:var(--muted);font-size:14px;margin:0}
+details{border-top:1px solid var(--line);padding-top:12px}
+details summary{cursor:pointer;font-weight:600}
+details p{color:var(--muted);font-size:14px;max-width:75ch;margin:10px 0 0}
+.toast{font-size:13px;color:var(--band-muted)}
+
+/* Botones + y − dentro de los campos */
+.field .step{border:0;border-radius:0;background:transparent;color:var(--accent-strong);font-size:20px;font-weight:700;line-height:1;padding:0;width:42px;align-self:stretch;flex:none;transform:none}
+.field .step:hover{background:var(--accent-soft);transform:none}
+.field .step:active{background:var(--accent-soft)}
+.field .step:first-child{border-right:1px solid var(--line)} .field .step:last-child{border-left:1px solid var(--line)}
+
+/* Más costos (opcional) */
+details.more{border:1px dashed var(--line);border-radius:12px;padding:10px 14px;background:var(--surface-2)}
+details.more summary{list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px;font-weight:600}
+details.more summary::-webkit-details-marker{display:none}
+details.more summary::after{content:"+";font-size:20px;color:var(--accent-strong);line-height:1}
+details.more[open] summary::after{content:"−"}
+details.more .badge{font-size:12px;font-weight:600;color:var(--muted)}
+details.more > div{display:grid;gap:12px;margin-top:12px}
+
+/* Barra fija del resultado en el celular */
+.dock{display:none}
+@media (max-width:880px){
+  .dock{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:20;align-items:center;justify-content:space-between;gap:12px;
+    background:var(--band);color:var(--band-ink);box-shadow:0 -8px 24px -12px rgba(0,0,0,.45);
+    padding:10px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+    transition:transform .25s ease}
+  .dock.oculta{transform:translateY(110%)}
+  .dock .d-k{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--band-muted);font-weight:600}
+  .dock .d-v{font-family:var(--display);font-weight:800;font-size:24px;line-height:1.1;font-variant-numeric:tabular-nums}
+  .dock .d-v.good{color:var(--mint)} .dock .d-v.warn{color:#F4C46A} .dock .d-v.bad{color:#FF8B80}
+  .dock .d-r{text-align:right}
+  .dock .d-r b{font-family:var(--display);font-size:16px;font-variant-numeric:tabular-nums}
+  main{padding-bottom:96px}
+}
+
+/* Ofertas compactas en el celular */
+.offer .cab{display:grid;grid-template-columns:64px minmax(0,1fr);gap:10px;align-items:end}
+@media (max-width:480px){
+  .offer{padding:12px 14px;gap:8px}
+  .offer .units input{font-size:22px}
+  .offer .res{font-size:22px}
+  .offer dl{grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 12px;font-size:12.5px}
+  .offer dt{grid-row:auto}
+  .card{padding:16px}
+  .big{font-size:clamp(40px,13vw,56px)}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top gut">
+  <div class="in">
+    <div class="brand">
+      <div class="mark" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="4" y="2" width="16" height="20" rx="3" fill="#fff"/><rect x="7" y="5" width="10" height="4" rx="1" fill="#0C2A23"/><circle cx="8.5" cy="13" r="1.3" fill="#0C2A23"/><circle cx="12" cy="13" r="1.3" fill="#0C2A23"/><circle cx="15.5" cy="13" r="1.3" fill="#0C2A23"/><circle cx="8.5" cy="17" r="1.3" fill="#0C2A23"/><circle cx="12" cy="17" r="1.3" fill="#0C2A23"/><circle cx="15.5" cy="17" r="1.3" fill="#F4B33D"/></svg>
+      </div>
+      <div><h1>Costeo Contraentrega</h1><p>Precio, utilidad real y CPA máximo por pedido entregado</p></div>
+    </div>
+    <div class="topact">
+      <button type="button" class="btn-ghost" id="reset">Volver al ejemplo</button>
+      <button type="button" class="btn-main" id="guardar">Guardar costeo</button>
+    </div>
+  </div>
+</header>
+
+<section class="hero gut" aria-labelledby="hTit">
+  <div class="in">
+    <div>
+      <div class="eyebrow" id="hTit">Te queda por cada pedido entregado · <span id="hPrecio">1 unidad</span></div>
+      <div class="big good" id="vUtil">—</div>
+      <div class="verdict">
+        <span class="pill good" id="pEstado">—</span>
+        <span class="pill on-dark num" id="pMargen">—</span>
+        <span class="pill on-dark num" id="pPrecio">—</span>
+      </div>
+      <p class="msg" id="alerta"></p>
+    </div>
+    <div class="gauge" aria-labelledby="gTit">
+      <h3 id="gTit">Tu CPA en Meta frente a lo que aguanta el producto</h3>
+      <div class="track" id="track"><div class="needle" id="needle" title="Tu CPA"></div></div>
+      <div class="gscale">
+        <span>Tu CPA <b id="gCpa">—</b></span>
+        <span>Para tu meta <b id="gMeta">—</b></span>
+        <span>Máximo sin perder <b id="gMax">—</b></span>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><span>Precio sugerido</span><b id="kSug">—</b></div>
+        <div class="kpi"><span>Efectividad</span><b id="kEf">—</b></div>
+        <div class="kpi"><span>Cada 100 compras</span><b id="k100">—</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<main class="gut">
+  <div class="in">
+    <div class="cols">
+      <form class="card" id="f" autocomplete="off" aria-labelledby="tDat">
+        <h2 id="tDat"><span class="ic" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h10M4 17h7"/></svg></span>Datos del producto</h2>
+
+        <div class="sec">
+          <div class="sec-t">Producto</div>
+          <label for="nombre">Nombre <small>Opcional, sirve para guardar el costeo</small>
+            <div class="field"><input id="nombre" type="text" placeholder="Ej.: Mini probador de billetes"></div></label>
+          <div class="row2">
+            <label for="costo">Precio proveedor <small>Lo que pagas por unidad en Dropi</small>
+              <div class="field"><span>$</span><input id="costo" inputmode="numeric" value="16.500"></div></label>
+            <label for="flete">Flete por envío <small>Lo que cobra la transportadora</small>
+              <div class="field"><span>$</span><input id="flete" inputmode="numeric" value="19.532"></div></label>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="sec">
+          <div class="sec-t">Logística</div>
+          <div class="row2">
+            <div class="slide"><div class="head"><label for="cancel" style="display:inline">Cancelaciones</label><output id="oCancel" for="cancel">—</output></div>
+              <input type="range" id="cancel" min="0" max="80" step="1" value="35" aria-describedby="hCancel"><small class="empty" id="hCancel">Pedidos que no se despachan</small></div>
+            <div class="slide"><div class="head"><label for="dev" style="display:inline">Devoluciones</label><output id="oDev" for="dev">—</output></div>
+              <input type="range" id="dev" min="0" max="60" step="1" value="17" aria-describedby="hDev"><small class="empty" id="hDev">De los despachados, los que regresan</small></div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="sec">
+          <div class="sec-t">Pauta y margen</div>
+          <div class="row2">
+            <label for="cpa">CPA en Meta <small>Costo por compra del Administrador de anuncios</small>
+              <div class="field"><button type="button" class="step" data-step="-1000" data-for="cpa" aria-label="Bajar CPA $1.000">−</button><span>$</span><input id="cpa" inputmode="numeric" value="10.000"><button type="button" class="step" data-step="1000" data-for="cpa" aria-label="Subir CPA $1.000">+</button></div></label>
+            <div class="slide"><div class="head"><label for="meta" style="display:inline">Utilidad deseada</label><output id="oMeta" for="meta">—</output></div>
+              <input type="range" id="meta" min="5" max="50" step="1" value="20" aria-describedby="hMeta"><small class="empty" id="hMeta">Sobre el precio de venta</small></div>
+          </div>
+        </div>
+
+        <details class="more" id="mas">
+          <summary>Más costos (opcional) <span class="badge" id="masCuenta">Ninguno activo</span></summary>
+          <div>
+            <div class="row2">
+              <label for="fleteDev">Cobro extra por devolución <small>Si te cobran el regreso; si no, 0</small>
+                <div class="field"><span>$</span><input id="fleteDev" inputmode="numeric" value="0"></div></label>
+              <label for="recaudo">Comisión de recaudo <small>% sobre lo cobrado, si aplica</small>
+                <div class="field"><input id="recaudo" inputmode="decimal" value="0"><span>%</span></div></label>
+            </div>
+            <div class="row2">
+              <label for="admin">Costos administrativos <small>Por pedido entregado</small>
+                <div class="field"><span>$</span><input id="admin" inputmode="numeric" value="0"></div></label>
+              <label for="fulfil">Empaque o alistamiento <small>Por pedido despachado</small>
+                <div class="field"><span>$</span><input id="fulfil" inputmode="numeric" value="0"></div></label>
+            </div>
+          </div>
+        </details>
+      </form>
+
+      <div style="display:grid;gap:18px;min-width:0">
+        <section class="card" aria-labelledby="tEmb">
+          <h2 id="tEmb"><span class="ic" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg></span>Qué pasa con 100 compras en Meta</h2>
+          <div class="funnel" id="embudo"></div>
+        </section>
+        <section class="card" aria-labelledby="tDes">
+          <h2 id="tDes"><span class="ic" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="8"/><path d="M12 4v8l6 4"/></svg></span>A dónde va cada venta entregada</h2>
+          <div class="stack" id="barra" aria-hidden="true"></div>
+          <div class="legend" id="leyenda"></div>
+        </section>
+      </div>
+    </div>
+
+    <section class="card" aria-labelledby="tOf">
+      <h2 id="tOf"><span class="ic" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M3 7l9-4 9 4-9 4z"/><path d="M3 12l9 4 9-4M3 17l9 4 9-4"/></svg></span>Ofertas de cantidad</h2>
+      <p class="empty" style="margin-top:-8px">Toca el número de unidades o el precio para cambiarlos. Cada combo paga un solo flete y un solo CPA.</p>
+      <div class="offers" id="ofertas"></div>
+    </section>
+
+    <section class="card" aria-labelledby="tGua">
+      <h2 id="tGua"><span class="ic" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M6 3h10l3 3v15H5V3z"/><path d="M8 3v6h8V3M8 21v-7h8v7"/></svg></span>Costeos guardados <span class="toast" id="estadoGuardar" role="status"></span></h2>
+      <div class="saved" id="guardados"></div>
+      <details>
+        <summary>Cómo se calcula</summary>
+        <p>Efectividad = (1 − cancelaciones) × (1 − devoluciones). El CPA de Meta se paga por cada compra, también por las que se caen, así que por pedido entregado cuesta CPA ÷ efectividad. El flete se paga por cada despacho: por entregado cuesta flete ÷ (1 − devoluciones), más el cobro de regreso si existe. Utilidad = precio − producto − fletes − comisión − CPA por entregado − otros costos. El CPA máximo sin perder es lo que queda antes de la pauta multiplicado por la efectividad: si tu CPA en Meta lo supera, pierdes plata.</p>
+      </details>
+    </section>
+  </div>
+</main>
+
+<div class="dock oculta" id="dock" aria-live="polite">
+  <div><div class="d-k" id="dEst">Te queda por entregado</div><div class="d-v good" id="dUtil">—</div></div>
+  <div class="d-r"><div class="d-k">CPA máximo</div><b id="dMax">—</b><div class="d-k" style="text-transform:none;letter-spacing:0" id="dCpa">Tu CPA —</div></div>
+</div>
+
+<script>
+(() => {
+  const ids = ['nombre','costo','flete','cancel','dev','fleteDev','recaudo','cpa','meta','admin','fulfil'];
+  const EJEMPLO = {nombre:'',costo:'16.500',flete:'19.532',cancel:'35',dev:'17',fleteDev:'0',recaudo:'0',cpa:'10.000',meta:'20',admin:'0',fulfil:'0', ofertas:[['1','69.900'],['2','99.900'],['3','129.900'],['5','']]};
+  const MONEY = ['costo','flete','fleteDev','cpa','admin','fulfil'];
+  const $ = id => document.getElementById(id);
+  const cop = v => (v < 0 ? '−$' : '$') + Math.round(Math.abs(v)).toLocaleString('es-CO');
+  const pct = v => (v * 100).toLocaleString('es-CO', {maximumFractionDigits: 1}) + '%';
+  const num = s => { const t = String(s ?? '').replace(/\./g, '').replace(',', '.').replace(/[^\d.\-]/g, ''); const n = parseFloat(t); return isFinite(n) ? n : 0; };
+  const fmtInput = el => { if (el.value.trim() !== '') el.value = Math.round(num(el.value)).toLocaleString('es-CO'); };
+
+  function leer() {
+    const d = {}; ids.forEach(k => d[k] = k === 'nombre' ? $(k).value : num($(k).value));
+    ['cancel','dev','recaudo','meta'].forEach(k => d[k] = Math.min(Math.max(d[k], 0), 99) / 100);
+    return d;
+  }
+
+  // Cálculo puro por pedido entregado para un combo de n unidades a precio P.
+  function costear(d, n, P) {
+    const desp = 1 - d.cancel, ent = 1 - d.dev, ef = desp * ent;
+    const producto = d.costo * n;
+    const fletes = d.flete / ent + d.fleteDev * d.dev / ent;
+    const empaque = d.fulfil / ent;
+    const recaudo = d.recaudo * P;
+    const cpaEnt = ef > 0 ? d.cpa / ef : Infinity;
+    const antesPauta = P - producto - fletes - empaque - recaudo - d.admin;
+    const util = antesPauta - cpaEnt;
+    return {ef, producto, fletes, empaque, recaudo, cpaEnt, util, margen: P > 0 ? util / P : 0,
+            cpaMax: antesPauta * ef, cpaMeta: (antesPauta - d.meta * P) * ef, admin: d.admin};
+  }
+
+  function sugerido(d) {
+    const ent = 1 - d.dev, ef = (1 - d.cancel) * ent;
+    const fijos = d.costo + d.flete / ent + d.fleteDev * d.dev / ent + d.fulfil / ent + d.admin + (ef > 0 ? d.cpa / ef : 0);
+    const den = 1 - d.meta - d.recaudo;
+    if (den <= 0) return null;
+    const exacto = fijos / den;
+    return {exacto, redondo: Math.ceil((exacto + 100) / 10000) * 10000 - 100};
+  }
+
+  const estado = (util, margen, meta) => util < 0 ? ['bad', 'Pierdes'] : margen < meta ? ['warn', 'Gana, bajo tu meta'] : ['good', 'Cumple tu meta'];
+
+  function pintarOfertas(lista) {
+    $('ofertas').innerHTML = lista.map(([u, p], i) => `<article class="offer" id="of${i}">
+      <span class="flag" hidden>Mejor margen</span>
+      <div class="cab">
+        <div class="units"><input class="u" id="u${i}" inputmode="numeric" value="${u}" aria-label="Unidades del combo ${i + 1}"><span>unid.</span></div>
+        <label for="p${i}" style="font-size:12.5px;color:var(--muted);font-weight:600">Precio del combo
+          <div class="field"><button type="button" class="step" data-step="-1000" data-for="p${i}" aria-label="Bajar precio $1.000">−</button><input class="p" id="p${i}" inputmode="numeric" value="${p}" placeholder="Precio"><button type="button" class="step" data-step="1000" data-for="p${i}" aria-label="Subir precio $1.000">+</button></div></label>
+      </div>
+      <div><div style="font-size:12px;color:var(--muted);font-weight:600">Te queda por entregado</div><div class="res">—</div></div>
+      <dl><dt>Margen</dt><dd class="mg">—</dd><dt>Por unidad</dt><dd class="pu">—</dd><dt>Ahorro del cliente</dt><dd class="ah">—</dd><dt>CPA máximo</dt><dd class="cm">—</dd></dl>
+      <span class="pill st" style="justify-self:start">—</span>
+    </article>`).join('');
+  }
+  const filasOfertas = () => [...$('ofertas').querySelectorAll('.offer')].map(o => [o.querySelector('.u').value, o.querySelector('.p').value]);
+
+  function sliders() {
+    [['cancel','oCancel'],['dev','oDev'],['meta','oMeta']].forEach(([k, o]) => {
+      const el = $(k); $(o).textContent = el.value + '%';
+      el.style.setProperty('--p', ((el.value - el.min) / (el.max - el.min) * 100) + '%');
+    });
+  }
+
+  function calcular() {
+    sliders();
+    const d = leer();
+    const desp = 1 - d.cancel, ent = 1 - d.dev, ef = desp * ent;
+    const filas = filasOfertas();
+    const p1 = num(filas.find(f => num(f[0]) === 1)?.[1]);
+    const sug = sugerido(d);
+    const P = p1 > 0 ? p1 : (sug ? sug.redondo : 0);
+    const r = costear(d, 1, P);
+    const [cls, txt] = estado(r.util, r.margen, d.meta);
+
+    $('hPrecio').textContent = `1 unidad a ${cop(P)}${p1 > 0 ? '' : ' (sugerido)'}`;
+    $('vUtil').textContent = cop(r.util); $('vUtil').className = 'big ' + cls;
+    $('pEstado').textContent = txt; $('pEstado').className = 'pill ' + cls;
+    $('pMargen').textContent = `Margen ${pct(r.margen)}`;
+    $('pPrecio').textContent = `Meta ${pct(d.meta)}`;
+
+    let msg;
+    if (r.util < 0) msg = `Con <b>${cop(P)}</b> pierdes <b>${cop(-r.util)}</b> por pedido entregado. Para no perder, tu CPA debe bajar de <b>${cop(Math.max(r.cpaMax, 0))}</b> o el precio debe subir.`;
+    else if (d.cpa > r.cpaMeta) msg = `Ganas plata, pero no el ${pct(d.meta)} que buscas. Con un CPA de <b>${cop(Math.max(r.cpaMeta, 0))}</b> o menos llegas a tu meta.`;
+    else msg = `Vas bien. Tu CPA puede subir hasta <b>${cop(r.cpaMeta)}</b> sin bajar de tu meta, y hasta <b>${cop(r.cpaMax)}</b> sin perder.`;
+    if (ef < 0.5) msg += ` Ojo: la efectividad es de ${pct(ef)}, menos de la mitad de las compras se cobran.`;
+    $('alerta').innerHTML = msg;
+
+    const top = Math.max(r.cpaMax * 1.25, d.cpa * 1.1, 1);
+    const z1 = Math.max(0, Math.min(r.cpaMeta / top, 1)), z2 = Math.max(0, Math.min(r.cpaMax / top, 1));
+    $('track').style.setProperty('--z1', (z1 * 100) + '%'); $('track').style.setProperty('--z2', (z2 * 100) + '%');
+    $('needle').style.left = Math.min(d.cpa / top * 100, 100) + '%';
+    $('gCpa').textContent = cop(d.cpa); $('gMeta').textContent = cop(Math.max(r.cpaMeta, 0)); $('gMax').textContent = cop(Math.max(r.cpaMax, 0));
+    $('dUtil').textContent = cop(r.util); $('dUtil').className = 'd-v ' + cls; $('dEst').textContent = txt;
+    $('dMax').textContent = cop(Math.max(r.cpaMax, 0)); $('dCpa').textContent = 'Tu CPA ' + cop(d.cpa);
+    const activos = [d.fleteDev, d.recaudo, d.admin, d.fulfil].filter(v => v > 0).length;
+    $('masCuenta').textContent = activos ? `${activos} activo${activos > 1 ? 's' : ''}` : 'Ninguno activo';
+    $('kSug').textContent = sug ? cop(sug.redondo) : '—';
+    $('kEf').textContent = pct(ef);
+    $('k100').textContent = cop(100 * ef * r.util);
+
+    const nDesp = 100 * desp, nEnt = 100 * ef;
+    $('embudo').innerHTML = [
+      ['Compras en Meta', 100, 'var(--c-otros)', `Pagas ${cop(100 * d.cpa)} de pauta`],
+      ['Se despachan', nDesp, 'var(--c-flete)', `${Math.round(100 - nDesp)} se cancelan antes`],
+      ['Se entregan', nEnt, 'var(--accent)', `${Math.round(nDesp - nEnt)} se devuelven`]
+    ].map(([t, v, c, s]) => `<div class="fstep"><span>${t}<br><small class="empty" style="font-size:12px">${s}</small></span><div class="fbar"><i style="width:${v}%;background:${c}"></i></div><b>${Math.round(v)}</b></div>`).join('')
+      + `<p class="empty" style="margin:4px 0 0">Ganancia de esas 100 compras: <b style="color:var(--ink)">${cop(nEnt * r.util)}</b></p>`;
+
+    const partes = [
+      ['Producto', r.producto, 'var(--c-prod)'],
+      ['Fletes con devoluciones', r.fletes + r.empaque, 'var(--c-flete)'],
+      ['Pauta por entregado', r.cpaEnt, 'var(--c-pauta)'],
+      ['Comisión y otros', r.recaudo + r.admin, 'var(--c-otros)'],
+      [r.util >= 0 ? 'Te queda' : 'Pierdes', r.util, r.util >= 0 ? 'var(--good)' : 'var(--bad)']
+    ].filter((p, i) => i !== 3 || p[1] > 0);
+    const total = partes.reduce((a, p) => a + Math.max(p[1], 0), 0) || 1;
+    $('barra').innerHTML = partes.filter(p => p[1] > 0).map(p => `<i style="width:${(p[1] / total * 100).toFixed(2)}%;background:${p[2]}"></i>`).join('');
+    $('leyenda').innerHTML = partes.map(p => `<div><span><i class="sw" style="background:${p[2]}"></i>${p[0]}</span><b class="num">${cop(p[1])}</b><em>${P > 0 ? pct(p[1] / P) : ''}</em></div>`).join('')
+      + `<div class="total"><span>Precio de venta</span><b class="num">${cop(P)}</b><em>100%</em></div>`;
+
+    let mejor = null;
+    $('ofertas').querySelectorAll('.offer').forEach(o => {
+      const n = num(o.querySelector('.u').value), pp = num(o.querySelector('.p').value);
+      const q = s => o.querySelector(s);
+      o.classList.remove('best'); q('.flag').hidden = true;
+      if (!n || !pp) { ['.res','.mg','.pu','.ah','.cm'].forEach(s => q(s).textContent = '—'); q('.st').textContent = 'Sin precio'; q('.st').className = 'pill st'; q('.res').className = 'res'; return; }
+      const x = costear(d, n, pp); const [c2, t2] = estado(x.util, x.margen, d.meta);
+      q('.res').textContent = cop(x.util); q('.res').className = 'res ' + c2;
+      q('.mg').textContent = pct(x.margen); q('.pu').textContent = cop(pp / n);
+      q('.ah').textContent = n > 1 && P > 0 ? cop(P * n - pp) : '—';
+      q('.cm').textContent = cop(x.cpaMax);
+      q('.st').textContent = t2; q('.st').className = 'pill st ' + c2;
+      if (x.util > 0 && (!mejor || x.margen > mejor.m)) mejor = {o, m: x.margen};
+    });
+    if (mejor) { mejor.o.classList.add('best'); mejor.o.querySelector('.flag').hidden = false; }
+  }
+
+  const KEY = 'costeos-contraentrega-v1';
+  const leerGuardados = () => { try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch { return []; } };
+  function pintarGuardados() {
+    const g = leerGuardados();
+    $('guardados').innerHTML = g.length ? g.map((x, i) => `<div class="item"><span><b>${(x.nombre || 'Sin nombre').replace(/</g, '&lt;')}</b> <span class="empty" style="font-size:12.5px">${x.fecha}</span></span><span><button type="button" data-c="${i}">Abrir</button> <button type="button" data-b="${i}">Borrar</button></span></div>`).join('')
+      : '<p class="empty">Aún no hay costeos guardados. Escribe el nombre del producto y pulsa «Guardar costeo»; quedan en este navegador.</p>';
+  }
+  function aplicar(v) {
+    ids.forEach(k => { if (v[k] !== undefined) $(k).value = v[k]; });
+    pintarOfertas(v.ofertas || EJEMPLO.ofertas); calcular();
+    if ([v.fleteDev, v.recaudo, v.admin, v.fulfil].some(x => num(x) > 0)) $('mas').open = true;
+  }
+  $('guardar').addEventListener('click', () => {
+    const v = {}; ids.forEach(k => v[k] = $(k).value); v.ofertas = filasOfertas(); v.fecha = new Date().toLocaleDateString('es-CO');
+    try { const g = leerGuardados().filter(x => !v.nombre || x.nombre !== v.nombre); g.unshift(v); localStorage.setItem(KEY, JSON.stringify(g.slice(0, 30))); $('estadoGuardar').textContent = '· Guardado'; }
+    catch { $('estadoGuardar').textContent = '· Este navegador no deja guardar'; }
+    pintarGuardados();
+  });
+  $('guardados').addEventListener('click', e => {
+    const g = leerGuardados();
+    if (e.target.dataset.c) aplicar(g[+e.target.dataset.c]);
+    if (e.target.dataset.b) { g.splice(+e.target.dataset.b, 1); try { localStorage.setItem(KEY, JSON.stringify(g)); } catch {} pintarGuardados(); }
+  });
+  $('reset').addEventListener('click', () => { aplicar(EJEMPLO); $('estadoGuardar').textContent = ''; });
+  document.addEventListener('input', calcular);
+  document.addEventListener('change', e => { if (MONEY.includes(e.target.id) || e.target.classList.contains('p')) fmtInput(e.target); calcular(); });
+  document.addEventListener('submit', e => e.preventDefault());
+  document.addEventListener('click', e => {
+    const b = e.target.closest('.step'); if (!b) return;
+    const el = $(b.dataset.for); const v = Math.max(0, num(el.value) + Number(b.dataset.step));
+    el.value = Math.round(v).toLocaleString('es-CO'); calcular();
+  });
+  // La barra fija aparece en el celular cuando el resultado grande sale de la pantalla.
+  try {
+    new IntersectionObserver(([en]) => $('dock').classList.toggle('oculta', en.isIntersecting), {threshold: 0})
+      .observe(document.querySelector('.hero'));
+  } catch { $('dock').classList.remove('oculta'); }
+
+  pintarOfertas(EJEMPLO.ofertas); pintarGuardados(); calcular();
+  window.__costear = costear;
+})();
+</script>
+<script>if("serviceWorker" in navigator){addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));}</script>
+</body>
+</html>
