@@ -188,7 +188,13 @@ details.more > div{display:grid;gap:12px;margin-top:12px}
 }
 
 /* Ofertas compactas en el celular */
-.offer .cab{display:grid;grid-template-columns:64px minmax(0,1fr);gap:10px;align-items:end}
+.offer .cab{display:grid;grid-template-columns:56px minmax(0,1fr);gap:10px;align-items:end}
+/* Los campos se encogen dentro de su tarjeta en vez de salirse */
+label{min-width:0;grid-template-columns:minmax(0,1fr)}
+.field{min-width:0;max-width:100%}
+.field input{width:100%;min-width:0}
+.offer .field .step{width:36px;font-size:18px}
+.offer .field input{padding-inline:6px;text-align:center}
 @media (max-width:480px){
   .offer{padding:12px 14px;gap:8px}
   .offer .units input{font-size:22px}
