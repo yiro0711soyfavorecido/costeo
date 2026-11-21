@@ -188,13 +188,18 @@ details.more > div{display:grid;gap:12px;margin-top:12px}
 }
 
 /* Ofertas compactas en el celular */
-.offer .cab{display:grid;grid-template-columns:56px minmax(0,1fr);gap:10px;align-items:end}
+.offer .cab{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:end}
+.offer .units{white-space:nowrap}
+.offer{container-type:inline-size}
+@container (max-width: 290px){ .offer .cab{grid-template-columns:minmax(0,1fr);gap:6px} }
+.offer .units input{width:34px}
+.offer .units span{font-size:14px}
 /* Los campos se encogen dentro de su tarjeta en vez de salirse */
 label{min-width:0;grid-template-columns:minmax(0,1fr)}
 .field{min-width:0;max-width:100%}
 .field input{width:100%;min-width:0}
-.offer .field .step{width:36px;font-size:18px}
-.offer .field input{padding-inline:6px;text-align:center}
+.offer .field .step{width:30px;font-size:17px}
+.offer .field input{padding:8px 2px;text-align:center;font-size:14px}
 @media (max-width:480px){
   .offer{padding:12px 14px;gap:8px}
   .offer .units input{font-size:22px}
@@ -392,7 +397,7 @@ label{min-width:0;grid-template-columns:minmax(0,1fr)}
     $('ofertas').innerHTML = lista.map(([u, p], i) => `<article class="offer" id="of${i}">
       <span class="flag" hidden>Mejor margen</span>
       <div class="cab">
-        <div class="units"><input class="u" id="u${i}" inputmode="numeric" value="${u}" aria-label="Unidades del combo ${i + 1}"><span>unid.</span></div>
+        <div class="units"><input class="u" id="u${i}" inputmode="numeric" value="${u}" aria-label="Unidades del combo ${i + 1}"><span>${num(u) === 1 ? 'unidad' : 'unidades'}</span></div>
         <label for="p${i}" style="font-size:12.5px;color:var(--muted);font-weight:600">Precio del combo
           <div class="field"><button type="button" class="step" data-step="-1000" data-for="p${i}" aria-label="Bajar precio $1.000">−</button><input class="p" id="p${i}" inputmode="numeric" value="${p}" placeholder="Precio"><button type="button" class="step" data-step="1000" data-for="p${i}" aria-label="Subir precio $1.000">+</button></div></label>
       </div>
@@ -471,6 +476,7 @@ label{min-width:0;grid-template-columns:minmax(0,1fr)}
     $('ofertas').querySelectorAll('.offer').forEach(o => {
       const n = num(o.querySelector('.u').value), pp = num(o.querySelector('.p').value);
       const q = s => o.querySelector(s);
+      q('.units span').textContent = n === 1 ? 'unidad' : 'unidades';
       o.classList.remove('best'); q('.flag').hidden = true;
       if (!n || !pp) { ['.res','.mg','.pu','.ah','.cm'].forEach(s => q(s).textContent = '—'); q('.st').textContent = 'Sin precio'; q('.st').className = 'pill st'; q('.res').className = 'res'; return; }
       const x = costear(d, n, pp); const [c2, t2] = estado(x.util, x.margen, d.meta);

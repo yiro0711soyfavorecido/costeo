@@ -1,5 +1,5 @@
 // Guarda la app en el teléfono o el computador para que abra sin internet.
-const CACHE = 'costeo-v4';
+const CACHE = 'costeo-v5';
 const ARCHIVOS = ['./', './index.html', './manifest.webmanifest', './icono-192.png', './icono-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
